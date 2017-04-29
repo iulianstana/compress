@@ -29,23 +29,13 @@ func NewDriver(database string, collection string) (*CompressionDriver, error) {
 	return &CompressionDriver{c, database, collection}, nil
 }
 
-func (compressionDriver *CompressionDriver) AddString() error {
-
-	entry := &bson.M{
-		"_id": "compression",
-		"counter": 3,
-		"attributes": bson.M{
-			"Romania": 0,
-			"Bucharest": 1,
-			"Azimut": 2,
-		},
-	}
-
+func (compressionDriver *CompressionDriver) AddString(entry *bson.M) error {
 	return compressionDriver.Connection.Insert(&entry)
 }
 
-func (compressionDriver *CompressionDriver) GetAttribute(findDict bson.M) ([]bson.M, error) {
+func (compressionDriver *CompressionDriver) GetAttribute(attribute string) ([]bson.M, error) {
 	var results []bson.M
+	findDict := bson.M{"_id": attribute}
 	err := compressionDriver.Connection.Find(findDict).All(&results)
 
 	if err != nil {

@@ -18,9 +18,16 @@ func main() {
 		fmt.Println(nil)
 	}
 
-	driver.AddString()
-	findDict := bson.M{
-		"_id": "compression",
+	attribute := "compression"
+	entry := &bson.M{
+		"_id": attribute,
+		"counter": 3,
+		"values": bson.M{
+			"Romania": 0,
+			"Bucharest": 1,
+			"Azimut": 2,
+		},
 	}
-	fmt.Println(driver.GetAttribute(findDict))
+	driver.AddString(entry)
+	fmt.Println(driver.GetAttribute(attribute))
 }
