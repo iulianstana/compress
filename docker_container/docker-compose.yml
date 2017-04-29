@@ -1,0 +1,33 @@
+version: '2'
+
+services:
+    compression:
+        build:
+            context: ../  # Root of the repo - for dockerfile to find stuff.
+            dockerfile: docker_container/Dockerfile
+        command: sleep 3600
+        image: golang:1.6-onbuild
+        # use different image names for go and python as go/python tests could run in parallel on the same host
+        volumes:
+            - ../:/opt/src/compress
+            - /mnt/logs/:/mnt/logs/
+        links:
+            - mongo:mongo
+        environment:
+            - GOPATH=/go:/opt
+            - ENVIRONMENT=testing
+            - ENV=testing
+        working_dir: /opt/src/compress/
+        privileged: true
+        container_name: compression
+    mongo:
+        image: mongo:3.0
+        command: mongod --smallfiles --nojournal --noprealloc --dbpath /mongodb/data
+        tmpfs:
+            - /mongodb/data:size=600M
+        expose:
+            - 27017
+        # Suppress logging as it reduces tests duration
+        logging:
+            driver: none
+        container_name: mongo
