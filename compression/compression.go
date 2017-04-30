@@ -14,8 +14,8 @@ const MONGO_PORT = 27017
 
 type CompressionDriver struct {
 	Connection *mgo.Collection
-	DATABASE   string
-	COLLECTION string
+	KeyToValue map[string]map[string]int
+	ValueToKey map[string]map[int]string
 }
 
 func NewDriver(database string, collection string) (*CompressionDriver, error) {
@@ -26,21 +26,50 @@ func NewDriver(database string, collection string) (*CompressionDriver, error) {
 	}
 	c := session.DB(database).C(collection)
 
-	return &CompressionDriver{c, database, collection}, nil
+	return &CompressionDriver{c, map[string]map[string]int{}, map[string]map[int]string{}}, nil
 }
 
 func (compressionDriver *CompressionDriver) AddString(entry *bson.M) error {
 	return compressionDriver.Connection.Insert(&entry)
 }
 
-func (compressionDriver *CompressionDriver) GetAttribute(attribute string) ([]bson.M, error) {
-	var results []bson.M
+func (compressionDriver *CompressionDriver) DropCollection() {
+	compressionDriver.Connection.DropCollection()
+}
+
+func (compressionDriver *CompressionDriver) LoadAttribute(attribute string) error {
+	var result bson.M
 	findDict := bson.M{"_id": attribute}
-	err := compressionDriver.Connection.Find(findDict).All(&results)
+	err := compressionDriver.Connection.Find(findDict).One(&result)
 
 	if err != nil {
-		return nil, err
+		return err
 	}
+	delete(result, "_id")
+	delete(result, "counter")
 
-	return results, nil
+	compressionDriver.KeyToValue[attribute] = convertKeyToValue(result)
+	compressionDriver.ValueToKey[attribute] = reverseKeyToValue(result)
+
+	return nil
+}
+
+func convertKeyToValue(object bson.M) map[string]int {
+	result := map[string]int{}
+	for key, value := range object {
+		if valueInt, ok := value.(int); ok {
+			result[key] = valueInt
+		}
+	}
+	return result
+}
+
+func reverseKeyToValue(object bson.M) map[int]string {
+	result := map[int]string{}
+	for key, value := range object {
+		if valueInt, ok := value.(int); ok {
+			result[valueInt] = key
+		}
+	}
+	return result
 }

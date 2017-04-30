@@ -34,11 +34,10 @@ func (suite *DriverSuite) TestInsertGet() {
 	entry := &bson.M{
 		"_id": attribute,
 		"counter": 3,
-		"values": bson.M{
-			"Romania": 0,
-			"Bucharest": 1,
-			"Azimut": 2,
-		},
+		"Romania": 0,
+		"Bucharest": 1,
+		"Azimut": 2,
+
 	}
 
 	// Insert into mongo
@@ -46,9 +45,9 @@ func (suite *DriverSuite) TestInsertGet() {
 	assert.Nil(t, err, "Entry was not Inserted")
 
 	// Get from mongo
-	entries, err := suite.driver.GetAttribute(attribute)
+	err = suite.driver.LoadAttribute(attribute)
 	assert.Nil(t, err, "Entry was not Inserted")
-	assert.Equal(t, entries[0]["_id"], attribute, "Test attribute is returned")
+	assert.Equal(t, suite.driver.KeyToValue[attribute]["Romania"], 0, "Test attribute is returned")
 }
 
 func TestDriverSuite(t *testing.T) {
