@@ -6,8 +6,7 @@ services:
             context: ../  # Root of the repo - for dockerfile to find stuff.
             dockerfile: docker_container/Dockerfile
         command: sleep 3600
-        image: golang:1.6-onbuild
-        # use different image names for go and python as go/python tests could run in parallel on the same host
+        image: golang
         volumes:
             - ../:/opt/src/compress
             - /mnt/logs/:/mnt/logs/
@@ -15,8 +14,6 @@ services:
             - mongo:mongo
         environment:
             - GOPATH=/go:/opt
-            - ENVIRONMENT=testing
-            - ENV=testing
         working_dir: /opt/src/compress/
         privileged: true
         container_name: compression
