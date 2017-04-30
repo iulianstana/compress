@@ -12,6 +12,7 @@ Create a mechanism that convert data from **string** to **integer** and save it 
 
 In case I want to convert from **string**.
 
+```
 > make database interrogation with **my_string**
 
 > in case **my_string** is present, then return **integer_value_of_string**
@@ -21,13 +22,12 @@ In case I want to convert from **string**.
 have te counter value)
 
 > make database interrogation with **my_integer**
-
 (usually those kind o interrogation need to be done when I want to decompress my data.)
 
 > in case **my_integer** is present, then return **string_value_of_integer**
 
 > in case **my_integer** is not present, raise an error message
-
+```
 
 ## How to use
 
