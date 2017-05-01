@@ -38,6 +38,40 @@ func (compressionDriver *CompressionDriver) DropCollection() {
 	compressionDriver.Connection.DropCollection()
 }
 
+func (compressionDriver *CompressionDriver) UpdateKey(attribute string, key string) error {
+	if _, ok := compressionDriver.KeyToValue[attribute][key]; ok {
+		return nil
+	}
+
+	found := false
+	counter := 0
+	var entry bson.M
+	findDict := bson.M{"_id": attribute}
+	err := compressionDriver.Connection.Find(findDict).One(&entry)
+	if err == nil {
+		if _, ok := entry[key]; ok {
+			found = true
+			counter = entry[key].(int)
+		} else {
+			counter = entry["counter"].(int)
+		}
+	} else {
+		counter = 0
+		compressionDriver.KeyToValue[attribute] = map[string]int{}
+		compressionDriver.ValueToKey[attribute] = map[int]string{}
+	}
+	if found == false {
+		counter += 1
+		updateDict := bson.M{"$set": bson.M{"counter": counter, key: counter}}
+		compressionDriver.Connection.Update(findDict, updateDict)
+	}
+
+	// insert into local structure
+	compressionDriver.KeyToValue[attribute][key] = counter
+	compressionDriver.ValueToKey[attribute][counter] = key
+
+	return nil
+}
 
 func (compressionDriver *CompressionDriver) UpdateValue(attribute string, value int) error {
 	if _, ok := compressionDriver.ValueToKey[attribute][value]; ok == false {

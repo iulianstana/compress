@@ -25,6 +25,45 @@ func (suite *DriverSuite) SetupSuite() {
 	suite.driver, _ = NewDriver(DATABASE, COLLECTION)
 }
 
+func (suite *DriverSuite) TestUpdateKey() {
+	t := suite.T()
+
+	attribute, entry := generateEntry()
+	err := suite.driver.Connection.Insert(&entry)
+	assert.Nil(t, err, "Mongo could not Insert entry")
+
+	entryKey := "Romania"
+	// Key is already in KeyToValue structure
+	mapSize := len(suite.driver.KeyToValue[attribute])
+	err = suite.driver.UpdateKey(attribute, entryKey)
+	assert.Nil(t, err, "Key was not found in KeyToValue Structure")
+	assert.Equal(t, mapSize, len(suite.driver.KeyToValue[attribute]), "Structure was Updated")
+
+	// Key appeared in the mean time
+	delete(suite.driver.KeyToValue[attribute], entryKey)
+
+	mapSize = len(suite.driver.KeyToValue[attribute])
+	err = suite.driver.UpdateKey(attribute, entryKey)
+	assert.Nil(t, err, "Key was not fount in KeyToValue Structure")
+	assert.Contains(t, suite.driver.KeyToValue[attribute], entryKey, "Key was not inserted")
+	assert.Equal(t, mapSize + 1, len(suite.driver.KeyToValue[attribute]), "Key was not updated")
+
+	// Key not present, insert it
+	mapSize = len(suite.driver.KeyToValue[attribute])
+	newKey := "GoLang"
+	err = suite.driver.UpdateKey(attribute, newKey)
+	assert.Nil(t, err, "Value was not fount in ValueToKey Structure")
+	assert.Contains(t, suite.driver.KeyToValue[attribute], newKey, "Key was not inserted")
+	assert.Equal(t, mapSize + 1, len(suite.driver.KeyToValue[attribute]), "New Key was not added")
+
+	// Insert Kew in new attribute
+	newAttribute := "NewAttribute"
+	err = suite.driver.UpdateKey(newAttribute, newKey)
+	assert.Nil(t, err, "Value was not fount in ValueToKey Structure")
+	assert.Contains(t, suite.driver.KeyToValue, newAttribute, "NewAttribute was not inserted")
+	assert.Equal(t, 1, len(suite.driver.KeyToValue[newAttribute]), "NewAttribute was not created")
+}
+
 func (suite *DriverSuite) TestUpdateValue() {
 	t := suite.T()
 
@@ -32,7 +71,7 @@ func (suite *DriverSuite) TestUpdateValue() {
 	err := suite.driver.Connection.Insert(&entry)
 	assert.Nil(t, err, "Mongo could not Insert entry")
 
-	entryValue := 0
+	entryValue := 1
 	// Value is already in ValueToKey structure
 	err = suite.driver.UpdateValue(attribute, entryValue)
 	assert.Nil(t, err, "Value was not fount in ValueToKey Structure")
@@ -57,7 +96,7 @@ func (suite *DriverSuite) TestLoadAttribute() {
 	err := suite.driver.Connection.Insert(&entry)
 	assert.Nil(t, err, "Mongo could not Insert entry")
 
-	key, value := "Romania", 0 // use random element from entry
+	key, value := "Romania", 1 // use random element from entry
 	// Load attribute in our driver
 	err = suite.driver.LoadAttribute(attribute)
 	err = suite.driver.LoadAttribute(attribute)
@@ -74,9 +113,9 @@ func generateEntry() (string, bson.M) {
 	entry := bson.M{
 		"_id": attribute,
 		"counter": 3,
-		"Romania": 0,
-		"Bucharest": 1,
-		"Azimut": 2,
+		"Romania": 1,
+		"Bucharest": 2,
+		"Azimut": 3,
 
 	}
 	return attribute, entry
