@@ -3,6 +3,7 @@ package compression
 import (
 	// "errors" errors.New("Mongopool streams config not found")
 	"fmt"
+	"errors"
 
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
@@ -35,6 +36,20 @@ func (compressionDriver *CompressionDriver) AddString(entry *bson.M) error {
 
 func (compressionDriver *CompressionDriver) DropCollection() {
 	compressionDriver.Connection.DropCollection()
+}
+
+
+func (compressionDriver *CompressionDriver) UpdateValue(attribute string, value int) error {
+	if _, ok := compressionDriver.ValueToKey[attribute][value]; ok == false {
+		err := compressionDriver.LoadAttribute(attribute)
+		if err != nil {
+			return err
+		}
+	}
+	if _, ok := compressionDriver.ValueToKey[attribute][value]; ok {
+		return nil
+	}
+	return errors.New(fmt.Sprintf("Value %d does not exist for attribute %s", value, attribute))
 }
 
 func (compressionDriver *CompressionDriver) LoadAttribute(attribute string) error {

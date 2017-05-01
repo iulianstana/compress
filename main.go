@@ -22,10 +22,13 @@ func main() {
 	entry := &bson.M{
 		"_id": attribute,
 		"counter": 3,
-		"Romania": 5,
+		"Romania": 9,
 		"Bucharest": 3,
 		"Azimut": 121,
 	}
 	driver.AddString(entry)
 	fmt.Println(driver.LoadAttribute(attribute))
+	fmt.Println(driver.UpdateValue(attribute, 5))
+	fmt.Println(driver.UpdateValue(attribute, 100))
+	fmt.Println(driver.UpdateValue(attribute, -1))
 }
